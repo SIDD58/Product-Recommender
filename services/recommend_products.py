@@ -15,7 +15,7 @@ matcher = EmbeddingMatcher(embedding_provider)
 def recommend_products(query: str, products: List[Product]) -> List[RecommendedProduct]:
     # mock ranking (temporary)
     # Also handle case when products is empty
-    top_k=1
+    top_k=3
     is_fallback = False
     if not products: 
         return []
