@@ -35,7 +35,7 @@ INPUT body (JSON)
 
 
 # Project Structure 
-
+```
 .
 
 ├── providers/              # External API integrations (AI & Embeddings)
@@ -55,5 +55,6 @@ INPUT body (JSON)
 ├── compose.yaml            # Docker orchestration (Redis, etc.)
 ├── pyproject.toml          # Dependency management (uv/pip)
 └── .env                    # Environment variables (API Keys)
+```
 
 ![Demo Screenshot](images/postman.png)
