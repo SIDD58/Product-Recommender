@@ -128,7 +128,7 @@ class EmbeddingMatcher(BaseMatcher):
 
 
 
-# deprecated methods 
+# deprecated methods with redis 
 
 
 # def rank(self, query: str, products: List[Product]) -> List[Tuple[Product, float]]:

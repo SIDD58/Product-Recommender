@@ -1,6 +1,5 @@
 from typing import List
 from schemas.product_schema import Product, RecommendedProduct
-
 from services.explanation import generate_explanation
 from providers.openai_embedding_provider import OpenAIEmbeddingProvider
 from services.matching.openai_embedding_matcher import EmbeddingMatcher
@@ -13,7 +12,6 @@ embedding_provider = OpenAIEmbeddingProvider()
 matcher = EmbeddingMatcher(embedding_provider)
 
 def recommend_products(query: str, products: List[Product]) -> List[RecommendedProduct]:
-    # mock ranking (temporary)
     # Also handle case when products is empty
     top_k=3
     is_fallback = False
