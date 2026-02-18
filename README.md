@@ -1,9 +1,14 @@
+## Key Features
+- **Embedding matcher** : Embedding matcher using direct openai API or using langchain wrapper. Observed direcct open API has better resposne time. 
+- **Storing Embeddings in redis for Caching**: redis is used for caching the embedding of Products and query. 
+- **Fallback logic**: fallback logic , in case openai embedding does not work result is shown using Jaccard simialrity  
+- **Explantion**: Expalantion is based on overlapping terms and the confidence of embedding 
+
 # How to run the code 
 docker compose up -d
 uv run uvicorn main:server --reload
 
 # set environment varaibles 
-
 
 ## Environment Setup
 
