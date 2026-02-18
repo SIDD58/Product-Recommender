@@ -2,8 +2,8 @@ from typing import List
 from schemas.product_schema import Product, RecommendedProduct
 
 from services.explanation import generate_explanation
-from providers.openai_embeddings import OpenAIEmbeddingProvider
-from services.matching.deprecate_embedding_matcher import EmbeddingMatcher
+from providers.openai_embedding_provider import OpenAIEmbeddingProvider
+from services.matching.openai_embedding_matcher import EmbeddingMatcher
 # from providers.embedding_provider import OpenAIEmbeddingProvider
 # from services.matching.embedding_matcher import EmbeddingMatcher
 
@@ -16,13 +16,27 @@ def recommend_products(query: str, products: List[Product]) -> List[RecommendedP
     # mock ranking (temporary)
     # Also handle case when products is empty
     top_k=1
+    is_fallback = False
     if not products: 
         return []
-    # Also handle case when procuts are less than equal to 3
+    # Also handle case when procuts are less than equal to k
+    all_ranked=matcher.rank(query,products)
+    try:
+        # Attempt AI Ranking
+        # raise Exception("An intentional, generic exception so fall back can be executed")
+        ranked = all_ranked=matcher.rank(query,products)
+    except Exception as e:
+        # In case of failure Jaccard logic implementation
+        print(f"Semantic match failed: {e}. Falling back to Jaccard Similarity.")
+        ranked = matcher.keyword_fallback(query, products)
+        is_fallback = True
+
+
+
     if len(products) <= top_k:
-        ranked = matcher.rank(query, products) 
+        ranked = all_ranked
     else:
-        ranked = matcher.rank(query, products)[:top_k] # get top 3
+        ranked = all_ranked[:top_k] # get top k
     
     results: List[RecommendedProduct] = []
     for product, score in ranked:

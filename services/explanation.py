@@ -32,6 +32,6 @@ def generate_explanation(query: str, product: Product, score: float) -> str:
     elif score > 0.55:
         parts.append("moderate semantic similarity")
     else:
-        parts.append("loosely related")
+        parts.append("seems related")
 
     return "; ".join(parts).capitalize() + "."

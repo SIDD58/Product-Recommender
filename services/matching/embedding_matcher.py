@@ -2,7 +2,7 @@ import numpy as np
 from typing import List, Tuple
 from schemas.product_schema import Product
 from services.matching.base import BaseMatcher
-from providers.embedding_provider import OpenAIEmbeddingProvider
+from providers.embedding_provider_langchain import OpenAIEmbeddingProvider
 from services.text_builder import product_to_text
 from dotenv import load_dotenv
 import redis,json

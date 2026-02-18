@@ -1,6 +1,7 @@
 
 # How to run the code 
 docker compose up -d
+
 uv run uvicorn main:server --reload
 
 
