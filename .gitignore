@@ -1,0 +1,29 @@
+# Python-generated files
+__pycache__/
+*.py[oc]
+build/
+dist/
+wheels/
+*.egg-info
+*$py.class
+
+
+# --- Virtual Environments (uv / pip) ---
+.venv/
+venv/
+
+
+# --- Environment Variables (Crucial for security) ---
+.env
+
+# --- Version Managers ---
+.python-version
+
+# --- IDEs and OS ---
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# --- Logs and temporary files ---
+*.log

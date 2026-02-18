@@ -1,0 +1,24 @@
+services:
+
+  # Pure Cache for embeddings
+  redis-cache-embed:
+    image: redis:8.2.4-alpine
+    container_name: redis-caching-embed
+    command: redis-server
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_cache_embeding:/data 
+    restart: always
+
+  # Visualization Tool for Redis
+  redisinsight_embed:
+    image: redis/redisinsight:latest
+    container_name: redisinsight_embed
+    ports:
+      - "5540:5540"
+    restart: always
+
+volumes:
+  redis_cache_embeding:
+    driver: local
