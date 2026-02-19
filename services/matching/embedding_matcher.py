@@ -43,17 +43,6 @@ class EmbeddingMatcher(BaseMatcher):
 
         return ranked
 
-    # def _product_to_text(self, product: Product) -> str:
-    #     """
-    #     Converts a Product into a single string for embedding.
-    #     Adjust fields based on your Product schema.
-    #     """
-    #     parts = [
-    #         product.name,
-    #         product.description or "",
-    #         product.category or "",
-    #     ]
-    #     return " | ".join(filter(None, parts))
 
     def _cosine_similarity(self, query_vec: np.ndarray, product_vecs: np.ndarray) -> np.ndarray:
         """

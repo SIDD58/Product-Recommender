@@ -1,12 +1,10 @@
 ## Key Features
-- **Embedding matcher** : Embedding matcher using direct openai API or using langchain wrapper. Observed direcct open API has better resposne time. 
+- **Embedding matchers** : Embedding matcher using direct openai API , using langchain wrapper and asynchronous embedding matcher. Observed direct open API with asynchronous embedding has better resposne time. 
 - **Storing Embeddings in redis for Caching**: redis is used for caching the embedding of Products and query. 
 - **Fallback logic**: fallback logic , in case openai embedding does not work result is shown using Jaccard simialrity  
 - **Explantion**: Expalantion is based on overlapping terms and the confidence of embedding 
+- **Ascynchornous Task sharing of Redis/openai Calls**: Task sahring of embedding and caching calls. 
 
-# How to run the code 
-docker compose up -d
-uv run uvicorn main:server --reload
 
 # set environment varaibles 
 
@@ -15,6 +13,10 @@ uv run uvicorn main:server --reload
 Create a `.env` file in the root directory:
 OPENAI_API_KEY='your open ai api key'
 REDIS_URL='redis://localhost:6379/0'
+
+# How to run the code 
+docker compose up -d
+uv run uvicorn main:server --reload
 
 # FAST API request and response 
 Use something like Postman to Test URL
@@ -57,4 +59,9 @@ INPUT body (JSON)
 └── .env                    # Environment variables (API Keys)
 ```
 
+
+Asynchrnous Flow
+![Demo Screenshot](images/async_flow_chart.png)
+
+Postman request
 ![Demo Screenshot](images/postman.png)

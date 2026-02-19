@@ -2,13 +2,12 @@ from typing import List, Tuple
 from schemas.product_schema import Product
 from services.matching.base import BaseMatcher
 from services.text_builder import product_to_text
-from providers.openai_embedding_provider import OpenAIEmbeddingProvider
+from providers.async_openai_embedding_provider import OpenAIEmbeddingProvider
 from dotenv import load_dotenv
-import numpy as np
-import redis,os,json
+import numpy as np, os ,json,asyncio
+import redis.asyncio as redis 
 load_dotenv()
 redis_url=os.environ.get('REDIS_URL','redis://localhost:6379/0')
-
 
 class EmbeddingMatcher(BaseMatcher):
 
@@ -38,31 +37,43 @@ class EmbeddingMatcher(BaseMatcher):
         print(f"Preloaded {len(uncached)} product embeddings into Redis")
 
     # Ranking Logic 
-    def rank(self, query: str, products: List[Product]) -> List[Tuple[Product, float]]:
+    async def rank(self, query: str, products: List[Product]) -> List[Tuple[Product, float]]:
         if not products:
             return []
-
+        
         # Step 1 — Batch fetch from Redis
-        pipe = self.redis.pipeline()
-        for p in products:
-            pipe.get(self._key(p))
-        cached_results = pipe.execute()
+        async def get_cached_products():
+            pipe = self.redis.pipeline()
+            for p in products:
+                pipe.get(self._key(p))
+            return await pipe.execute()
+        # it will resutls embeddings of products and Nulls for which there is not embedding
 
-        # Step 2 — Find missing ones
+        cached_products_task=asyncio.create_task(get_cached_products())
+        query_task = asyncio.create_task(self.embedding_provider.embed([query]))
+
+        cached_results = await cached_products_task
+
+        # Step 2 — Find uncached products 
         uncached = [
             p for p, result in zip(products, cached_results)
             if result is None
         ]
+        # all those products which are not in cache 
 
+        set_cached_products_task = None
         # Step 3 — Embed and store missing
         if uncached:
             texts = [product_to_text(p) for p in uncached]
-            embeddings = self.embedding_provider.embed(texts)
+            embeddings = await self.embedding_provider.embed(texts)
 
-            pipe = self.redis.pipeline()
-            for product, embedding in zip(uncached, embeddings):
-                pipe.set(self._key(product), json.dumps(embedding))
-            pipe.execute()
+            async def set_cached_products():
+                pipe = self.redis.pipeline()
+                for product, embedding in zip(uncached, embeddings):
+                    pipe.set(self._key(product), json.dumps(embedding))
+                await pipe.execute()
+            set_cached_products_task=asyncio.create_task(set_cached_products())
+            
 
             # Build a lookup so we don't need a second Redis fetch
             newly_cached = {
@@ -70,15 +81,16 @@ class EmbeddingMatcher(BaseMatcher):
                 for p, emb in zip(uncached, embeddings)
             }
 
-            # Merge into cached_results — replace None with newly computed embeddings
+            # Merge into cached_results replace None with newly computed embeddings
             cached_results = [
                 result if result is not None else newly_cached[self._key(p)]
                 for p, result in zip(products, cached_results)
             ]
 
-        # Step 4 — Safe parse, skip any still-None (shouldn't happen now)
+        # Step 4 — Safe parse
+        query_result=await query_task 
         product_embeddings = np.array([json.loads(r) for r in cached_results if r is not None])
-        query_embedding = np.array(self.embedding_provider.embed([query])[0])
+        query_embedding = np.array(query_result[0])
 
         scores = self._cosine_similarity(query_embedding, product_embeddings)
 
@@ -87,6 +99,10 @@ class EmbeddingMatcher(BaseMatcher):
             key=lambda x: x[1],
             reverse=True
         )
+
+        if set_cached_products_task:
+            await set_cached_products_task
+        # List of products sorted by ranking 
         return ranked
     
 
